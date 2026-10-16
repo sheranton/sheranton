@@ -1,32 +1,34 @@
 <p align="center">
-  <img src="assets/banner.svg" width="100%" alt="sheranton: Windows and Linux internals and binary analysis, in Rust, C++, C and Python">
+  <img src="assets/banner.svg" width="100%" alt="sheranton: a beginner learning Windows and Linux internals and binary analysis, in Rust, C++, C and Python">
 </p>
 
 ## About
 
-I'm an independent researcher working on systems programming and binary analysis across **Windows and Linux**. Most of what I build is small, focused tooling that makes the layer between source code and the running process visible: how compilers lay out objects and emit metadata, how linkers assemble a binary, how loaders map it into memory, and how debuggers and unwinders read it back.
+I'm a **beginner** teaching myself systems programming and reverse engineering on **Windows and Linux**. I learn best by building things, so most of my projects are small tools that help me see what happens between source code and a running program: how compilers lay out objects and metadata, how linkers put a binary together, how loaders map it into memory, and how debuggers and unwinders read it back.
 
-I'm most interested in the metadata a compiler *has* to leave in a binary, such as RTTI, vtables, unwind tables and import tables. It survives stripping, and it often reveals more about a program's structure than the symbol table did.
+Something I've found fascinating so far is the metadata a compiler *has* to leave in a binary, such as RTTI, vtables, unwind tables and import tables. It survives stripping, and it can tell you a surprising amount about how a program is put together.
 
 <p align="center">
   <img src="assets/anatomy.svg" width="100%" alt="The section layout of a Windows PE file and a Linux ELF file, with animated lines from each structure to the tool that reads it: pe-walker and pe-diff read the headers, section table and imports; rtti-dump and vtable-dump read RTTI and vtables in .rdata; pattern-scan scans .text on both; unwind-map reads the program headers, .eh_frame_hdr and .eh_frame">
 </p>
 
-### What I work on
+### What I'm learning
 
-- **Windows x64 internals:** PE/COFF layout, the MSVC C++ ABI, RTTI and class hierarchy recovery, vtable layout, import and export directories
-- **Linux internals:** ELF, the System V AMD64 ABI, DWARF call frame information and `.eh_frame`, program headers and the dynamic loader, `/proc`
-- **Reverse engineering tooling:** static analysis that recovers structure from stripped binaries, plus small utilities that fit into Ghidra, GDB, x64dbg and WinDbg workflows
-- **Languages:** C++ for Windows tooling, Rust for cross-platform command-line tools, C for the lowest layers, and Python for analysis scripts and test harnesses
+- **Windows x64 internals:** PE/COFF layout, the MSVC C++ ABI, RTTI and class hierarchies, vtables, imports and exports
+- **Linux internals:** ELF, the System V AMD64 ABI, DWARF call frame information and `.eh_frame`, program headers and the dynamic loader
+- **Reverse engineering:** reading stripped binaries with Ghidra, GDB, x64dbg and WinDbg, and writing small tools to help along the way
+- **Languages:** C++ for my Windows tools, Rust for cross-platform command-line tools, C for the low-level parts, and Python for scripts and tests
 
-### How I work
+### How I'm learning
 
-- **Lab-first:** everything is built and tested on my own machines, against my own target binaries
-- **Verified, not eyeballed:** tools are tested against real binaries and, where possible, checked against an independent decoder
-- **Small and auditable:** focused codebases with zero third-party dependencies
-- **Documented internals:** every README explains the format being parsed, not just the flags
+- **By building:** I learn each file format by writing a tool that reads it, and test it on binaries I've built myself
+- **By checking my work:** I compare my results with established tools like `readelf` and `llvm-readobj`, so I find out when I've got something wrong
+- **By keeping it small:** each tool does one thing and has no third-party dependencies, so I can understand every line
+- **By writing it down:** each README explains the format the tool reads, which helps me check that I really understand it
 
 ## Toolbox
+
+The languages and tools I've been learning with so far:
 
 <table>
   <tr>
@@ -61,7 +63,7 @@ I'm most interested in the metadata a compiler *has* to leave in a binary, such 
 
 ## Projects
 
-Two small toolkits for taking binaries apart, one for each binary format. The PE tools are C++17 with CMake, and they build and run on Windows, Linux and macOS. The ELF tooling is Rust. Everything is MIT-licensed, tested in CI, and has zero third-party dependencies.
+These are my learning projects: two small toolkits for taking binaries apart, one for each binary format. The PE tools are C++17 with CMake and build on Windows, Linux and macOS; the ELF tool is Rust. They're all MIT-licensed, tested in CI, and have no third-party dependencies.
 
 <table>
   <tr>
@@ -69,7 +71,7 @@ Two small toolkits for taking binaries apart, one for each binary format. The PE
 
 ### [unwind-map](https://github.com/sheranton/unwind-map)
 
-Recovers function boundaries from **stripped** Linux ELF binaries by decoding the `.eh_frame` unwind tables that `strip` can't remove. It still works when the section headers are gone, flags functions with exception handling, finds code that has no unwind info, puts symbols back with `objcopy`, exports to Ghidra and JSON, and draws the whole binary as a Hilbert-curve map. Checked against `llvm-readobj`'s independent decoder, it produced zero false starts and recovered every function with unwind info on x86-64, x86 and AArch64.
+My biggest project so far. It works out where functions start and end in **stripped** Linux ELF binaries by reading the `.eh_frame` unwind tables, which `strip` can't remove. It also works when the section headers are gone, flags functions with exception handling, points out code that has no unwind info, can put symbols back with `objcopy`, exports to Ghidra and JSON, and draws the binary as a Hilbert-curve map. I checked it against `llvm-readobj`'s decoder on x86-64, x86 and AArch64 test binaries, and it found every function with unwind info without any false starts.
 
 <p align="center">
   <img src="assets/unwind-map-demo.svg" width="61%" alt="Terminal demo: unwind-map recovers 578 functions from a stripped binary and objcopy puts the symbols back">
@@ -85,7 +87,7 @@ Recovers function boundaries from **stripped** Linux ELF binaries by decoding th
 
 ### [pe-walker](https://github.com/sheranton/pe-walker)
 
-Command-line inspector for the Portable Executable format: DOS and NT headers, section layout, imports and exports.
+A command-line inspector I wrote to learn the Portable Executable format. It prints the DOS and NT headers, section layout, imports and exports.
 
 ```powershell
 pe-walker --summary app.exe
@@ -98,7 +100,7 @@ pe-walker --summary app.exe
 
 ### [pe-diff](https://github.com/sheranton/pe-diff)
 
-Structural diff for two PE files. Compares headers, sections, imports and exports, and exits non-zero on drift so it can gate a CI pipeline.
+Compares two PE files: headers, sections, imports and exports. It exits non-zero when something changed, so it can be used in a CI pipeline.
 
 ```powershell
 pe-diff -T old.dll new.dll
@@ -113,7 +115,7 @@ pe-diff -T old.dll new.dll
 
 ### [rtti-dump](https://github.com/sheranton/rtti-dump)
 
-Recovers class hierarchies from stripped MSVC x64 binaries by walking Complete Object Locator → Class Hierarchy Descriptor → Base Class Array.
+Rebuilds class hierarchies from stripped MSVC x64 binaries by following the RTTI structures: Complete Object Locator → Class Hierarchy Descriptor → Base Class Array.
 
 ```powershell
 rtti-dump --demangle app.exe
@@ -126,7 +128,7 @@ rtti-dump --demangle app.exe
 
 ### [vtable-dump](https://github.com/sheranton/vtable-dump)
 
-Companion to rtti-dump. Finds each class's vtable through its Complete Object Locator back-reference and enumerates the virtual function slots.
+A companion to rtti-dump. It finds each class's vtable through its Complete Object Locator back-reference and lists the virtual function slots.
 
 ```powershell
 vtable-dump -f exception app.exe
@@ -141,7 +143,7 @@ vtable-dump -f exception app.exe
 
 ### [pattern-scan](https://github.com/sheranton/pattern-scan)
 
-Single-header C++17 library for IDA-style byte signature scanning. Candidates are found with `memchr` and filtered before the full compare, about 11× faster than a byte-by-byte scan, and a randomized test checks every result against a reference scanner.
+A single-header C++17 library for IDA-style byte signature scanning. It uses `memchr` to find candidates before doing the full compare, which made it about 11× faster than a byte-by-byte scan in my benchmark, and a randomized test checks every result against a simple reference scanner.
 
 ```cpp
 const auto sig = patscan::parse("48 8B ?? E8 ?? ?? ?? ?? 85 C0");
@@ -157,5 +159,5 @@ const auto* hit = patscan::find(data, size, sig);
 <br>
 
 <p align="center">
-  <sub>Built for learning and research. Every tool here is developed and tested against my own target binaries.</sub>
+  <sub>I'm still a beginner, so if you spot something wrong or have tips, please open an issue. Every tool here is built and tested against my own test binaries.</sub>
 </p>
